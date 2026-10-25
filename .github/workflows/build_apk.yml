@@ -27,13 +27,25 @@ jobs:
           flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Android Altyapisini Kur ve Kotlin'i Sabitle
+      - name: Proje Altyapisini Kur ve Kotlin Surumunu Global Sabitle
         run: |
           rm -rf android
           flutter create --platforms=android --org com.insignia.asistan --project-name insignia_vites_asistani .
           
-          # android/build.gradle dosyasini dogrudan duzgun icerikle yeniden olusturalim
+          # android/build.gradle dosyasina kotlin versiyonunu dogrudan ekleyelim
           cat << 'EOF' > android/build.gradle
+          buildscript {
+              ext.kotlin_version = '1.9.20'
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath 'com.android.tools.build:gradle:7.3.1'
+                  classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+              }
+          }
+
           allprojects {
               repositories {
                   google()
@@ -54,7 +66,6 @@ jobs:
           }
           EOF
 
-          # app/build.gradle icindeki kotlin versiyonunu garantiye alalim
           flutter pub get
 
       - name: APK Derle
