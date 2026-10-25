@@ -24,9 +24,9 @@ jobs:
           flutter-version: '3.19.0'
           channel: 'stable'
 
-      - name: Eksik Android Dosyalarini Olustur ve Izinleri Ekle
+      - name: Proje Klasorunu Hazirla ve Izinleri Ekle
         run: |
-          flutter create --org com.insignia.asistan .
+          flutter create --org com.insignia.asistan --project-name insignia_vites_asistani .
           sed -i '/<application/i \
           <uses-permission android:name="android.permission.INTERNET" />\n\
           <uses-permission android:name="android.permission.BLUETOOTH" />\n\
