@@ -24,20 +24,11 @@ jobs:
           flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Android Izinlerini Ekle
+      - name: Proje Kok Dizini Kontrolü ve Derleme
         run: |
-          if [ -f "android/app/src/main/AndroidManifest.xml" ]; then
-            sed -i '/<application/i \
-            <uses-permission android:name="android.permission.INTERNET" />\n\
-            <uses-permission android:name="android.permission.BLUETOOTH" />\n\
-            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />\n\
-            <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n\
-            <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />\n\
-            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />' android/app/src/main/AndroidManifest.xml
-          fi
-
-      - name: Paketleri Indir ve APK Derle
-        run: |
+          # Eğer ana dizinde pubspec.yaml yoksa hata vermemesi için kontrol edelim
+          pwd
+          ls -la
           flutter pub get
           flutter build apk --release
 
