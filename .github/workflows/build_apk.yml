@@ -24,10 +24,11 @@ jobs:
           flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Proje Altyapisini Kur
+      - name: Proje Altyapisini ve Dosyalari Olustur
         run: |
           flutter create --org com.insignia.asistan --project-name insignia_vites_asistani --overwrite .
 
+          # pubspec.yaml dosyamizi yazalim
           cat << 'EOF' > pubspec.yaml
           name: insignia_vites_asistani
           description: Opel Insignia 1.6T Asistan
@@ -48,8 +49,7 @@ jobs:
             uses-material-design: true
           EOF
 
-          sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = '\''1.9.0'\''/' android/build.gradle || true
-
+          # main.dart dosyamizi olusturalim
           cat << 'EOF' > lib/main.dart
           import 'dart:async';
           import 'dart:convert';
@@ -832,6 +832,11 @@ jobs:
           }
           }
           EOF
+
+          # KESIN COZUM: flutter create calistiktan sonra Kotlin versiyonunu zorla 1.9.20 yapalim
+          if [ -f "android/build.gradle" ]; then
+            sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = '\''1.9.20'\''/' android/build.gradle
+          fi
 
       - name: Paketleri Indir ve APK Derle
         run: |
