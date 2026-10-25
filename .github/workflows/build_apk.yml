@@ -27,9 +27,11 @@ jobs:
           flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Gradle ve Android Altyapisini Guncelle
+      - name: Android Altyapisini ve Kotlin Surumunu Guncelle
         run: |
           flutter create --platforms=android .
+          # Kotlin versiyonunu 1.9.20'ye sabitliyoruz
+          sed -i "s/ext.kotlin_version = .*/ext.kotlin_version = '1.9.20'/" android/build.gradle || true
           flutter pub get
 
       - name: APK Derle
