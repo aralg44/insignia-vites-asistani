@@ -24,9 +24,11 @@ jobs:
           flutter-version: '3.19.0'
           channel: 'stable'
 
-      - name: Proje Klasorunu Hazirla ve Izinleri Ekle
+      - name: Gecici Proje Olusturup Android Klasorunu Al (Dosyalari Koru)
         run: |
-          flutter create --org com.insignia.asistan --project-name insignia_vites_asistani .
+          flutter create --org com.insignia.asistan --project-name insignia_vites_asistani temp_app
+          cp -r temp_app/android ./android
+          rm -rf temp_app
           sed -i '/<application/i \
           <uses-permission android:name="android.permission.INTERNET" />\n\
           <uses-permission android:name="android.permission.BLUETOOTH" />\n\
