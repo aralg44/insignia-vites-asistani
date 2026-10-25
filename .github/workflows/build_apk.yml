@@ -27,12 +27,11 @@ jobs:
           flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Kotlin Surumunu Sabitle ve Paketleri Indir
+      - name: Uyumsuz Android Klasorunu Yenile ve Paketleri Al
         run: |
-          # android/build.gradle dosyasi varsa Kotlin surumunu guncelleyelim
-          if [ -f "android/build.gradle" ]; then
-            sed -i "s/ext.kotlin_version = .*/ext.kotlin_version = '1.9.20'/" android/build.gradle
-          fi
+          # Eski ve uyumsuz android/ios altyapisini temizleyip guncelini kuralim
+          rm -rf android ios
+          flutter create --platforms=android .
           flutter pub get
 
       - name: APK Derle
