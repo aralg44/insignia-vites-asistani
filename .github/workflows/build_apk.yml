@@ -27,11 +27,20 @@ jobs:
           flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Uyumsuz Android Klasorunu Yenile ve Paketleri Al
+      - name: Android Yapilandirmasini Temizle ve Kur
         run: |
-          # Eski ve uyumsuz android/ios altyapisini temizleyip guncelini kuralim
-          rm -rf android ios
-          flutter create --platforms=android .
+          # Eski android klasorunu ve gradle onbellegini temizleyelim
+          rm -rf android
+          
+          # Flutter'in bu surumu icin tertemiz android altyapisi olusturalim
+          flutter create --platforms=android --org com.insignia.asistan --project-name insignia_vites_asistani .
+          
+          # Kotlin versiyonunu guvenli bir sekilde 1.9.20 yapalim
+          if [ -f "android/build.gradle" ]; then
+            sed -i "s/ext.kotlin_version = .*/ext.kotlin_version = '1.9.20'/" android/build.gradle
+          fi
+          
+          # Paketleri alalim
           flutter pub get
 
       - name: APK Derle
