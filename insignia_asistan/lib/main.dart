@@ -249,7 +249,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return _rxBuffer.replaceAll("\r", " ").replaceAll("\n", " ").replaceAll(">", "").trim();
   }
 
-  // DTC ARIZA KODU OKUMA (Mod 03)
   Future<void> _readDtcCodes() async {
     if (!_isConnected) return;
     String yanıt = await _sendObdCommand("03");
@@ -262,7 +261,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  // DTC ARIZA KODU SİLME (Mod 04)
   Future<void> _clearDtcCodes() async {
     if (!_isConnected) return;
     await _sendObdCommand("04");
@@ -296,7 +294,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       if (loopCount % 20 == 0) {
         _parsePid(await _sendObdCommand("0105"), "05", (a, _) => _coolantTemp = a - 40);
-        if (loopCount % 60 == 0) await _readDtcCodes(); // Her 60 döngüde bir arızaları kontrol et
+        if (loopCount % 60 == 0) await _readDtcCodes();
       }
       loopCount++;
 
@@ -539,7 +537,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   decoration: const InputDecoration(labelText: "Benzin Fiyatı (TL)", border: OutlineInputBorder()),
                 ),
                 const Divider(color: Colors.white24, height: 20),
-                // ARIZA KODU BÖLÜMÜ
                 Text("Motor Arıza Durumu: $_arizaKodlari", style: const TextStyle(color: Colors.orangeAccent, fontSize: 12)),
                 const SizedBox(height: 8),
                 Row(
@@ -762,7 +759,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             SegmentedButton<bool>(
               segments: const [
                 ButtonSegment(value: true, label: Text("Şehir İçi Ekonomi"), icon: Icon(Icons.eco)),
-                ButtonSegment(value: false, label: Text("Performans (5850 RPM)"), icon: Icon(Icons.speed)),
+                ButtonSegment(value: false, label: Text("Performans (5850 RPM)`, icon: Icon(Icons.speed)),
               ],
               selected: {_ekonomiModu},
               onSelectionChanged: (val) => setState(() => _ekonomiModu = val.first),
