@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./insignia_asistan
     steps:
       - name: Kodu Cek
         uses: actions/checkout@v4
@@ -24,11 +27,8 @@ jobs:
           flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Proje Kok Dizini Kontrolü ve Derleme
+      - name: Paketleri Indir ve APK Derle
         run: |
-          # Eğer ana dizinde pubspec.yaml yoksa hata vermemesi için kontrol edelim
-          pwd
-          ls -la
           flutter pub get
           flutter build apk --release
 
@@ -37,5 +37,5 @@ jobs:
         with:
           name: Insignia-1.6T-Vites-Asistani-APK
           path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/apk/release/app-release.apk
+            insignia_asistan/build/app/outputs/flutter-apk/app-release.apk
+            insignia_asistan/build/app/outputs/apk/release/app-release.apk
