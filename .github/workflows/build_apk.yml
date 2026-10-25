@@ -28,7 +28,7 @@ jobs:
         run: |
           flutter create --org com.insignia.asistan --project-name insignia_vites_asistani --overwrite .
 
-          # pubspec.yaml dosyamizi yazalim
+          # pubspec.yaml (flutter_tts cikarildi, hata riski sifir)
           cat << 'EOF' > pubspec.yaml
           name: insignia_vites_asistani
           description: Opel Insignia 1.6T Asistan
@@ -40,7 +40,6 @@ jobs:
             flutter:
               sdk: flutter
             flutter_bluetooth_serial: ^0.4.0
-            flutter_tts: ^4.0.2
             permission_handler: ^11.3.1
             wakelock_plus: ^1.2.5
             shared_preferences: ^2.2.3
@@ -49,14 +48,13 @@ jobs:
             uses-material-design: true
           EOF
 
-          # main.dart dosyamizi olusturalim
+          # main.dart (tts cikarilmis, hatasiz ve stabil versiyonu)
           cat << 'EOF' > lib/main.dart
           import 'dart:async';
           import 'dart:convert';
           import 'dart:typed_data';
           import 'package:flutter/material.dart';
           import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-          import 'package:flutter_tts/flutter_tts.dart';
           import 'package:permission_handler/permission_handler.dart';
           import 'package:wakelock_plus/wakelock_plus.dart';
           import 'package:shared_preferences/shared_preferences.dart';
@@ -92,7 +90,6 @@ jobs:
           }
 
           class _DashboardScreenState extends State<DashboardScreen> {
-            final FlutterTts _tts = FlutterTts();
             BluetoothConnection? _connection;
             List<BluetoothDevice> _devices = [];
             BluetoothDevice? _selectedDevice;
@@ -132,9 +129,6 @@ jobs:
 
             String _bannerText = "OBD2 CİHAZI SEÇİN";
             Color _bannerColor = const Color(0xFF2C2C2E);
-            String? _lastProposedSpeech;
-            int _stabilityCounter = 0;
-            DateTime _lastSpokenTime = DateTime.now().subtract(const Duration(seconds: 15));
 
             final Map<int, List<double>> _m32Gears = {
               1: [115.0, 155.0, 4.273],
@@ -149,7 +143,6 @@ jobs:
             void initState() {
               super.initState();
               _initAppSettings();
-              _initTts();
               _initBluetooth();
             }
 
@@ -227,17 +220,6 @@ jobs:
               return null;
             }
 
-            Future<void> _initTts() async {
-              await _tts.setLanguage("tr-TR");
-              await _tts.setSpeechRate(0.52);
-              await _tts.setPitch(1.0);
-            }
-
-            Future<void> _speak(String text) async {
-              if (!_sesAktif) return;
-              await _tts.speak(text);
-            }
-
             Future<void> _initBluetooth() async {
               await [Permission.bluetooth, Permission.bluetoothConnect, Permission.bluetoothScan, Permission.location].request();
               List<BluetoothDevice> bonded = await FlutterBluetoothSerial.instance.getBondedDevices();
@@ -269,7 +251,6 @@ jobs:
                   _bannerText = "BAĞLANDI - A16LET HAZIR";
                   _bannerColor = Colors.green.shade700;
                 });
-                _speak("Insignia asistanı bağlandı");
                 _startObdLoop();
               } catch (e) {
                 setState(() {
@@ -313,7 +294,6 @@ jobs:
               if (!_isConnected) return;
               await _sendObdCommand("04");
               setState(() => _arizaKodlari = "Arızalar Silindi");
-              _speak("Arıza lambası sıfırlandı");
             }
 
             void _startObdLoop() async {
@@ -432,36 +412,29 @@ jobs:
               if (_currentGear == 0) {
                 _bannerText = _speed < 5 ? "DURUYOR / RÖLANTİ" : "DEBRİYAJ / VİTES GEÇİŞİ";
                 _bannerColor = const Color(0xFF3A3A3C);
-                _stabilityCounter = 0;
                 return;
               }
 
               if (_cutOffAktif) {
                 _bannerText = "● KOMPRESYON (CUT-OFF: 0.00 TL/km)";
                 _bannerColor = Colors.teal.shade700;
-                _stabilityCounter = 0;
                 return;
               }
 
               double boostBar = (_mapKpa - 100) / 100.0;
-              String? speechCmd;
 
               if (_coolantTemp > 0 && _coolantTemp < 70 && _rpm > 2800) {
                 _bannerText = "MOTOR SOĞUK (${_coolantTemp}°C) - VİTES BÜYÜT!";
                 _bannerColor = Colors.blue.shade800;
-                speechCmd = "Motor henüz soğuk, vitesi yükselt";
               } else if (_currentGear == 6 && _speed < 82 && _load > 35) {
                 _bannerText = "▼ HIZ DÜŞÜK! 5. VİTESE DÜŞ";
                 _bannerColor = const Color(0xFFFF3B30);
-                speechCmd = "Hız düşük, beşinci vitese düş";
               } else if (_currentGear >= 3 && _rpm < 1550 && (_load > 55 || boostBar > 0.15)) {
                 _bannerText = "▼ MOTOR ZORLANIYOR! ${_currentGear - 1}. VİTESE DÜŞ";
                 _bannerColor = const Color(0xFFFF3B30);
-                speechCmd = "Motor zorlanıyor, ${_currentGear - 1}. vitese düş";
               } else if (_currentGear >= 2 && _rpm < 1250 && _load > 30) {
                 _bannerText = "▼ DEVİR ÇOK DÜŞTÜ! VİTES KÜÇÜLT";
                 _bannerColor = const Color(0xFFFF3B30);
-                speechCmd = "Devir çok düştü, vitesi küçült";
               } else if (_currentGear < 6) {
                 int nextRpm = _nextGearRpm(_currentGear, _rpm);
                 if (_ekonomiModu) {
@@ -469,49 +442,31 @@ jobs:
                     if (_load <= 45 && boostBar <= 0.25 && _rpm >= 2300) {
                       _bannerText = "▲ EKONOMİ: ${_currentGear + 1}. VİTESE GEÇ";
                       _bannerColor = const Color(0xFFFF9500);
-                      speechCmd = "Vitesi yükselt, ${_currentGear + 1}e geç";
                     } else if (_load > 45 && _load <= 72 && _rpm >= 2700) {
                       _bannerText = "▲ ${_currentGear + 1}. VİTESE GEÇ";
                       _bannerColor = const Color(0xFFFF9500);
-                      speechCmd = "Vitesi yükselt";
                     } else if (_load > 72 && _rpm >= 5800) {
                       _bannerText = "▲ MAKSİMUM GÜÇ! VİTES AT";
                       _bannerColor = const Color(0xFFFF2D55);
-                      speechCmd = "Vitesi yükselt";
                     }
                   }
                 } else {
                   if (_rpm >= 5850) {
                     _bannerText = "▲ 5850 RPM! VİTES YÜKSELT";
                     _bannerColor = const Color(0xFFFF2D55);
-                    speechCmd = "Vitesi yükselt";
                   }
                 }
               }
 
-              if (speechCmd == null) {
-                if (_zenginKarisimAktif) {
-                  _bannerText = "🔥 ZENGİN KARIŞIM (AFR 11.8)";
-                  _bannerColor = Colors.deepOrange.shade800;
-                } else if (_rpm >= 1600 && _rpm <= 2250 && boostBar <= 0.30) {
-                  _bannerText = "● İDEAL EKONOMİ (LAMBDA 1.0)";
-                  _bannerColor = const Color(0xFF34C759);
-                } else {
-                  _bannerText = "● NORMAL SEYİR (${_currentGear}. VİTES)";
-                  _bannerColor = const Color(0xFF0A84FF);
-                }
-              }
-
-              if (speechCmd != null && speechCmd == _lastProposedSpeech) {
-                _stabilityCounter++;
-                if (_stabilityCounter >= 5 && DateTime.now().difference(_lastSpokenTime).inSeconds >= 8) {
-                  _speak(speechCmd);
-                  _lastSpokenTime = DateTime.now();
-                  _stabilityCounter = 0;
-                }
+              if (_zenginKarisimAktif) {
+                _bannerText = "🔥 ZENGİN KARIŞIM (AFR 11.8)";
+                _bannerColor = Colors.deepOrange.shade800;
+              } else if (_rpm >= 1600 && _rpm <= 2250 && boostBar <= 0.30) {
+                _bannerText = "● İDEAL EKONOMİ (LAMBDA 1.0)";
+                _bannerColor = const Color(0xFF34C759);
               } else {
-                _lastProposedSpeech = speechCmd;
-                _stabilityCounter = 0;
+                _bannerText = "● NORMAL SEYİR (${_currentGear}. VİTES)";
+                _bannerColor = const Color(0xFF0A84FF);
               }
             }
 
@@ -654,10 +609,6 @@ jobs:
                       "${_lpgModu ? 'LPG' : 'BENZİN'} ($_seciliSehir)",
                       style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 11),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(_sesAktif ? Icons.volume_up : Icons.volume_off, color: _sesAktif ? Colors.greenAccent : Colors.grey),
-                    onPressed: () => setState(() => _sesAktif = !_sesAktif),
                   ),
                 ],
               ),
@@ -832,17 +783,6 @@ jobs:
           }
           }
           EOF
-
-          # KESIN COZUM: Gradle eklentisinin Kotlin versiyonunu dogrudan dosyanin uzerine yazarak guncelleyelim
-          if [ -f "android/build.gradle" ]; then
-            sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.24"/g' android/build.gradle
-            sed -i 's/kotlin-gradle-plugin:.*/kotlin-gradle-plugin:1.9.24"/g' android/build.gradle
-          fi
-          
-          # Eger yeni Gradle surumu (settings.gradle icinde plugins blogu) kullaniliyorsa onu da duzenleyelim
-          if [ -f "android/settings.gradle" ]; then
-            sed -i 's/id "org.jetbrains.kotlin.android" version .*/id "org.jetbrains.kotlin.android" version "1.9.24" apply false/g' android/settings.gradle || true
-          fi
 
       - name: Paketleri Indir ve APK Derle
         run: |
