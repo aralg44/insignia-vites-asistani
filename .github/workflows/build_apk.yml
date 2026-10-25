@@ -26,10 +26,9 @@ jobs:
 
       - name: Proje Dosyalarini ve Altyapiyi Eksiksiz Olustur
         run: |
-          # 1. Projeyi sifirdan olustur
           flutter create --org com.insignia.asistan --project-name insignia_vites_asistani --overwrite .
 
-          # 2. pubspec.yaml dosyamizi güncelleyelim (Kütüphaneler)
+          # pubspec.yaml dosyamizi yazalim
           cat << 'EOF' > pubspec.yaml
           name: insignia_vites_asistani
           description: Opel Insignia 1.6T Asistan
@@ -50,7 +49,10 @@ jobs:
             uses-material-design: true
           EOF
 
-          # 3. main.dart dosyamizi olusturalim
+          # Kotlin sürüm hatasını önlemek için build.gradle dosyasını güncelleyelim
+          sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = '\''1.8.22'\''/' android/build.gradle || true
+
+          # main.dart dosyamizi olusturalim
           cat << 'EOF' > lib/main.dart
           import 'dart:async';
           import 'dart:convert';
@@ -682,7 +684,7 @@ jobs:
                         const SizedBox(width: 8),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: _isConnected ? Colors.red.shade700 : Colors.blue.latitude == 0 ? Colors.blue.shade700 : Colors.blue.shade700,
+                            backgroundColor: _isConnected ? Colors.red.shade700 : Colors.blue.shade700,
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           ),
                           onPressed: _isConnecting ? null : (_isConnected ? () => _connection?.close() : _connectOBD),
@@ -753,7 +755,7 @@ jobs:
                                   children: [
                                     Text(aktifYakitEtiketi, style: const TextStyle(color: Colors.amberAccent, fontSize: 11, fontWeight: FontWeight.bold)),
                                     Text(
-                                      _speed >= 5 ? "${_anlikTlKm.toStringAsFixed(2)} ₺" : "${_anLicTlKm() ?? _anlikTlKm.toStringAsFixed(1)} ₺",
+                                      _speed >= 5 ? "${_anlikTlKm.toStringAsFixed(2)} ₺" : "${_anlikTlKm.toStringAsFixed(1)} ₺",
                                       style: TextStyle(
                                         fontSize: 32,
                                         fontWeight: FontWeight.w900,
@@ -782,7 +784,7 @@ jobs:
                         ],
                       ),
                     ),
-                    const SizedBox(sourceText: "", height: 8),
+                    const SizedBox(height: 8),
 
                     Row(
                       children: [
@@ -803,9 +805,9 @@ jobs:
 
                     SegmentedButton<bool>(
                       segments: const [
-                        ButtonSegment(value: true, label: Text("Şehir İçi Ekonomi"), icon: Icon(Icons.eco)),
-                        ButtonSegment(value: false, label: Text("Performans (5850 RPM)"), icon: Icon(Icons.speed)),
-                      ],
+                        ButtonSession(value: true, label: Text("Şehir İçi Ekonomi"), icon: Icon(Icons.eco)),
+                        ButtonSession(value: false, label: Text("Performans (5850 RPM)"), icon: Icon(Icons.speed)),
+                      ] as List<ButtonSegment<bool>>,
                       selected: {_ekonomiModu},
                       onSelectionChanged: (val) => setState(() => _ekonomiModu = val.first),
                     ),
