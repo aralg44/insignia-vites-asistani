@@ -833,9 +833,15 @@ jobs:
           }
           EOF
 
-          # KESIN COZUM: flutter create calistiktan sonra Kotlin versiyonunu zorla 1.9.20 yapalim
+          # KESIN COZUM: Gradle eklentisinin Kotlin versiyonunu dogrudan dosyanin uzerine yazarak guncelleyelim
           if [ -f "android/build.gradle" ]; then
-            sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = '\''1.9.20'\''/' android/build.gradle
+            sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.24"/g' android/build.gradle
+            sed -i 's/kotlin-gradle-plugin:.*/kotlin-gradle-plugin:1.9.24"/g' android/build.gradle
+          fi
+          
+          # Eger yeni Gradle surumu (settings.gradle icinde plugins blogu) kullaniliyorsa onu da duzenleyelim
+          if [ -f "android/settings.gradle" ]; then
+            sed -i 's/id "org.jetbrains.kotlin.android" version .*/id "org.jetbrains.kotlin.android" version "1.9.24" apply false/g' android/settings.gradle || true
           fi
 
       - name: Paketleri Indir ve APK Derle
