@@ -27,9 +27,13 @@ jobs:
           flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Paketleri Indir ve APK Derle
+      - name: Gradle ve Android Altyapisini Guncelle
         run: |
+          flutter create --platforms=android .
           flutter pub get
+
+      - name: APK Derle
+        run: |
           flutter build apk --release
 
       - name: APK Dosyasini Yukle
