@@ -24,11 +24,18 @@ jobs:
           flutter-version: '3.19.0'
           channel: 'stable'
 
-      - name: Gecici Proje Olusturup Android Klasorunu Al (Dosyalari Koru)
+      - name: Proje Altyapisini ve Android Klasorunu Kur
         run: |
-          flutter create --org com.insignia.asistan --project-name insignia_vites_asistani temp_app
-          cp -r temp_app/android ./android
-          rm -rf temp_app
+          # Ozel main.dart dosyamizi guvenceye alalim
+          cp lib/main.dart /tmp/main_yedek.dart
+          
+          # Proje kok dizinini ve android klasorunu olusturalim
+          flutter create --org com.insignia.asistan --project-name insignia_vites_asistani --overwrite .
+          
+          # Ozel main.dart dosyamizi geri tasiyalim
+          cp /tmp/main_yedek.dart lib/main.dart
+          
+          # Android izinlerini ekleyelim
           sed -i '/<application/i \
           <uses-permission android:name="android.permission.INTERNET" />\n\
           <uses-permission android:name="android.permission.BLUETOOTH" />\n\
